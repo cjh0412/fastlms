@@ -1,23 +1,34 @@
-package com.zerobase.fastlms;
+package com.zerobase.fastlms.main.controller;
 
 
 //주소와 파일 매핑
 // 메소드를 통한 주소 매핑
 
+import com.zerobase.fastlms.compoents.MailCompoents;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 
+@RequiredArgsConstructor
 @Controller // 주소를 매핑하는 클래스를 특정
-public class MainPageController {
+public class MainController {
+    private final MailCompoents mailCompoents;
+
 @RequestMapping("/")//해당 주소요청에 대한 매핑
     public String index(){
        //thymeleaf를 통해 동일한 html명을 return하면 자동 매핑
         //spring: thymeleaf: suffix: .html 이 default값으로 설정되어 있음 임의 변경 가능
+//        String email = "email@example.com";
+//        String subject = "Test";
+//        String text = "This is a test";
+//
+//        mailCompoents.sendMail(email, subject, text);
+
         return "index";
     }
 
@@ -28,6 +39,7 @@ public class MainPageController {
     //response -> server -> web
     @RequestMapping("/hello")//해당 주소요청에 대한 매핑
     public void hello(HttpServletRequest request, HttpServletResponse response) throws IOException {
+
         response.setContentType("text/html;charset=UTF-8"); // 한글 인코딩
         PrintWriter printWriter = response.getWriter();
         String msg = "Hello fastlms website : 안녕하세요!";
@@ -35,4 +47,6 @@ public class MainPageController {
         printWriter.close();
 
     }
+
+
 }
