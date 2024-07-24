@@ -6,11 +6,13 @@ import com.zerobase.fastlms.member.model.MemberInput;
 import com.zerobase.fastlms.member.repository.MemberRepository;
 import com.zerobase.fastlms.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -19,6 +21,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MemberServiceImpl implements MemberService {
@@ -38,14 +41,14 @@ public class MemberServiceImpl implements MemberService {
         if (optionalMember.isPresent()){// 동일 id 존재한다면
             return false;
         }
-
+        String enPassword = BCrypt.hashpw(parameter.getPassword(), BCrypt.gensalt());
         String uuid = UUID.randomUUID().toString();
 
         Member member = Member.builder()
                 .userId(parameter.getUserId())
                 .userName(parameter.getUserName())
                 .phone(parameter.getPhone())
-                .password(parameter.getPassword())
+                .password(enPassword)
                 .regDt(LocalDateTime.now())
                 .emailAuthYN(false)
                 .emailAuthKey(uuid)
@@ -92,16 +95,18 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Optional<Member> optionalMember = memberRepository.findById(username);
-        if(!optionalMember.isPresent()){
-            throw new UsernameNotFoundException("회원정보가 존재하지 안ㅅ습니다.");
+        Optional<Member> optionalMember = memberRepository.findById(username); // email
 
+        if(!optionalMember.isPresent()){
+            throw new UsernameNotFoundException("회원정보가 존재하지 않습니다.");
         }
         Member member = optionalMember.get();
 
         List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
         grantedAuthorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+        log.info("=========User======");
+        log.info("User : {}", optionalMember);
 
-        return new User(member.getUserId(),  member.getPassword(),grantedAuthorities );
+        return new User(member.getUserId(),  member.getPassword(),grantedAuthorities);
     }
 }

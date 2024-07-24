@@ -28,6 +28,8 @@ public class Member {
     private String emailAuthKey; // 이메일 인증 키
     private LocalDateTime emailAuthDt; // 이메일 인증 일자
 
+
+
     
 
 }

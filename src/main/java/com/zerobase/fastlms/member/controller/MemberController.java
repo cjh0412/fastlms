@@ -7,18 +7,22 @@ import com.zerobase.fastlms.member.service.MemberService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDateTime;
 
-@Controller
 @RequiredArgsConstructor // 생성자 자동 생성
+@Controller
 public class MemberController {
 
+    private static final Logger log = LoggerFactory.getLogger(MemberController.class);
     private final MemberService memberService;
 
     @GetMapping(value = "/member/register" )
@@ -54,8 +58,12 @@ public class MemberController {
         return "member/info";
     }
 
-    @RequestMapping("/member/login")
-    public String login(){
+    @GetMapping("/member/login")
+    public String login(@RequestParam(value = "error", required = false) String error,
+                        @RequestParam(value = "exception", required = false) String exception,
+                        Model model) {
+            model.addAttribute("error", error);
+            model.addAttribute("exception", exception);
         return "member/login";
     }
 
