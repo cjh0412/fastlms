@@ -28,6 +28,17 @@ public class Member {
     private String emailAuthKey; // 이메일 인증 키
     private LocalDateTime emailAuthDt; // 이메일 인증 일자
 
+    private String resetPasswordKey;
+    private LocalDateTime resetPasswordLimitDt; // 비밀번호 변경 유효 기관
+
+    //관리자 여부를 지정?
+    // 회원에 따른 ROLE 지정 중 선택
+    // ex) 준회원, 정회원, 특별회원, 관리자 등 회원레벨을 부여하여 관리
+    
+    private boolean adminYn; // 관리자 여부 체크
+
+    
+
 
 
     

@@ -2,6 +2,7 @@ package com.zerobase.fastlms.member.controller;
 
 
 import com.zerobase.fastlms.member.model.MemberInput;
+import com.zerobase.fastlms.member.model.ResetPasswordInput;
 import com.zerobase.fastlms.member.repository.MemberRepository;
 import com.zerobase.fastlms.member.service.MemberService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,10 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 
@@ -58,13 +56,58 @@ public class MemberController {
         return "member/info";
     }
 
-    @GetMapping("/member/login")
-    public String login(@RequestParam(value = "error", required = false) String error,
-                        @RequestParam(value = "exception", required = false) String exception,
-                        Model model) {
-            model.addAttribute("error", error);
-            model.addAttribute("exception", exception);
+    @RequestMapping("/member/login")
+    public String login(){
+
         return "member/login";
     }
 
+    @RequestMapping("/member/loginProc")
+    public String loginProc(){
+        return "member/login";
+    }
+
+    @GetMapping("/member/find/password")
+    public String findPassword(){
+        return "member/find_password";
+    }
+
+    @PostMapping("/member/find/password")
+    public String findPasswordSubmit(ResetPasswordInput parameter, Model model){
+        boolean result = false;
+        try{
+            result = memberService.sendRestPassword(parameter);
+
+        }catch (Exception e){
+        }
+        model.addAttribute("result", result);
+
+
+//        return "redirect:/"; //주소와 view를 동일하게 변경하기 위해 redirect 사용
+
+        return "member/find_password_result";
+    }
+
+    @GetMapping("/member/reset/password")
+    public String resetPassword(HttpServletRequest request, Model model){
+        String uuid = request.getParameter("id");
+        boolean result = memberService.checkResetPassword(uuid);
+
+        model.addAttribute("result", result);
+        return "member/reset_password";
+    }
+
+    @PostMapping("/member/reset/password")
+    public String resetPasswordSubmit(ResetPasswordInput parameter, Model model){
+        boolean result = false;
+        try{
+            result = memberService.resetPassword(parameter.getId(), parameter.getPassword());
+
+        }catch (Exception e){
+        }
+
+        model.addAttribute("result", result);
+        return "member/reset_password_result";
+    }
 }
+

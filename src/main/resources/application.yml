@@ -12,17 +12,20 @@ spring:
 
     show-sql: true
 
-  mail:
-    host: smtp.gmail.com
-    port : 587
-    username: emailName
-    password: ouburguvffcvkqmn
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-              enable: true
+#  mail:
+#    host: smtp.gmail.com
+#    port : 587
+#    username: googleId
+#    password: appPassword
+#    properties:
+#      mail:
+#        smtp:
+#          auth: true
+#          starttls:
+#              enable: true
 
+logging:
+  level:
+    root: info;
 
 

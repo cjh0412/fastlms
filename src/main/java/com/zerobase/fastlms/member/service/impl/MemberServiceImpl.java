@@ -2,7 +2,9 @@ package com.zerobase.fastlms.member.service.impl;
 
 import com.zerobase.fastlms.compoents.MailCompoents;
 import com.zerobase.fastlms.member.entity.Member;
+import com.zerobase.fastlms.member.exception.MemberNotEmailAuthException;
 import com.zerobase.fastlms.member.model.MemberInput;
+import com.zerobase.fastlms.member.model.ResetPasswordInput;
 import com.zerobase.fastlms.member.repository.MemberRepository;
 import com.zerobase.fastlms.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
@@ -16,10 +18,7 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -29,16 +28,16 @@ public class MemberServiceImpl implements MemberService {
     private final MemberRepository memberRepository;
     private final MailCompoents mailCompoents;
 
+
     /**
-     *
      * 회원가입
      */
     @Override
     public boolean register(MemberInput parameter) {
 
         Optional<Member> optionalMember =
-        memberRepository.findById(parameter.getUserId()); //id를 가지고 메서드가 존재하는지 확인
-        if (optionalMember.isPresent()){// 동일 id 존재한다면
+                memberRepository.findById(parameter.getUserId()); //id를 가지고 메서드가 존재하는지 확인
+        if (optionalMember.isPresent()) {// 동일 id 존재한다면
             return false;
         }
         String enPassword = BCrypt.hashpw(parameter.getPassword(), BCrypt.gensalt());
@@ -69,7 +68,7 @@ public class MemberServiceImpl implements MemberService {
         String subject = "fastlms  사이트 가입을 축하드립니다.";
         String text = "<p>fastlms  사이트 가입을 축하드립니다.</p>" +
                 "<p>아래 링크를 클릭하셔서 가입을 완료하세요.</p>" +
-                "<p><a href='http://localhost:8080/member/email-auth?id="+ uuid +"'>가입완료</a></p>";
+                "<p><a href='http://localhost:8080/member/email-auth?id=" + uuid + "'>가입완료</a></p>";
         mailCompoents.sendMail(email, subject, text);
 
         return true;
@@ -78,14 +77,18 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public boolean emailAuth(String uuid) {
 
+        Optional<Member> optionalMember =  memberRepository.findByEmailAuthKey(uuid);
 
-        Optional<Member> optionalMember =
-        memberRepository.findByEmailAuthKey(uuid);
-
-        if(!optionalMember.isPresent()){
+        if (!optionalMember.isPresent()) {
             return false;
         }
         Member member = optionalMember.get();
+
+        // 이메일 확인 여부 체크
+        if(member.isEmailAuthYN()) {
+            return false; // 활성화 된 경우
+        }
+
         member.setEmailAuthYN(true);
         member.setEmailAuthDt(LocalDateTime.now());
         memberRepository.save(member);
@@ -93,20 +96,115 @@ public class MemberServiceImpl implements MemberService {
         return true;
     }
 
+    /**
+     * 입력한 이메일로 비밀번호 초기화 정보를 전송
+     *
+     * @param parameter
+     */
+    @Override
+    public boolean sendRestPassword(ResetPasswordInput parameter) {
+        // 이메일, 이름 둘다 체크
+        Optional<Member> optionalMember =
+                memberRepository.findByUserIdAndUserName(parameter.getUserId(), parameter.getUserName());
+
+        Member member = optionalMember.get();
+        String uuid = UUID.randomUUID().toString();
+        member.setResetPasswordKey(uuid);
+        member.setResetPasswordLimitDt(LocalDateTime.now().plusDays(1)); // 유효기관 하루
+        memberRepository.save(member); // 데이터 저장
+        
+        if (!optionalMember.isPresent()) {
+            throw new UsernameNotFoundException("회원정보가 존재하지 않습니다.");
+        }
+        String email = parameter.getUserId();
+        String subject = "[fastlms] 비밀번호 초기화 메일";
+        String text = "<p>fastlms 비밀번호 초기화 메일 입니다</p>" +
+                "<p>아래 링크를 클릭하셔서 비밀번호를 초기화 해주세요</p>" +
+                "<p><a href='http://localhost:8080/member/reset/password?id=" + uuid + "'>초기화링크</a></p>";
+        mailCompoents.sendMail(email, subject, text);
+        return true;
+    }
+
+    /**
+     * 입력받은 uuid에 대해 password로 초기화
+     *
+     * @param uuid
+     * @param password
+     */
+    @Override
+    public boolean resetPassword(String uuid, String password) {
+        Optional<Member> optionalMember = memberRepository.findByResetPasswordKey(uuid); // email
+
+        if (!optionalMember.isPresent()) {
+            throw new UsernameNotFoundException("회원정보가 존재하지 않습니다.");
+        }
+
+
+        Member member = optionalMember.get();
+
+        //초기화 날짜가 유효한지 체크
+        if(member.getResetPasswordLimitDt() == null){
+            throw new RuntimeException("유효한 날짜가 아닙니다.");
+        }
+        if(member.getResetPasswordLimitDt().isBefore(LocalDateTime.now())){
+            throw new RuntimeException("유효한 날짜가 아닙니다.");
+        }
+
+        String encPassword = BCrypt.hashpw(password, BCrypt.gensalt());
+        member.setPassword(encPassword);
+        member.setResetPasswordKey(""); // 초기화 완료후 데이터 삭제
+        member.setResetPasswordLimitDt(null);
+        memberRepository.save(member);
+
+        return true;
+    }
+
+    /**
+     * 입력받은 uuid 값이 유효한지 확인
+     *
+     * @param uuid
+     */
+    @Override
+    public boolean checkResetPassword(String uuid) {
+        Optional<Member> optionalMember = memberRepository.findByResetPasswordKey(uuid); // email
+
+        if (!optionalMember.isPresent()) {
+            return false;
+        }
+
+        Member member = optionalMember.get();
+
+        //초기화 날짜가 유효한지 체크
+        if(member.getResetPasswordLimitDt() == null){
+            throw new RuntimeException("유효한 날짜가 아닙니다.");
+        }
+        if(member.getResetPasswordLimitDt().isBefore(LocalDateTime.now())){
+            throw new RuntimeException("유효한 날짜가 아닙니다.");
+        }
+
+        return true;
+    }
+
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Optional<Member> optionalMember = memberRepository.findById(username); // email
 
-        if(!optionalMember.isPresent()){
+        if (!optionalMember.isPresent()) {
             throw new UsernameNotFoundException("회원정보가 존재하지 않습니다.");
         }
         Member member = optionalMember.get();
 
+        if(!member.isEmailAuthYN()){
+            throw new MemberNotEmailAuthException("이메일 활성화 이후에 로그인을 해주세요");
+        }
         List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
         grantedAuthorities.add(new SimpleGrantedAuthority("ROLE_USER"));
-        log.info("=========User======");
-        log.info("User : {}", optionalMember);
 
-        return new User(member.getUserId(),  member.getPassword(),grantedAuthorities);
+        if(member.isAdminYn()){
+            grantedAuthorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        }
+
+        return new User(member.getUserId(), member.getPassword(), grantedAuthorities);
     }
 }

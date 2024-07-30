@@ -48,5 +48,11 @@ public class MainController {
 
     }
 
+    @RequestMapping("/error/denied")//해당 주소요청에 대한 매핑
+    public String denied(){
+
+        return "error/denied";
+    }
+
 
 }
