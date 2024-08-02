@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -35,6 +37,8 @@ public class CourseDto {
 
     long categoryId;
 
+
+
     public static CourseDto of(Course course) {
         return  CourseDto.builder()
                 .id(course.getId())
@@ -50,6 +54,20 @@ public class CourseDto {
                 .udtDt(course.getUdtDt())
                 .categoryId(course.getCategoryId())
                 .build();
+
+    }
+
+    public static List<CourseDto> of(List<Course> courses) {
+
+        if(courses == null ) {
+            return null;
+        }
+
+        List<CourseDto> courseList = new ArrayList<>();
+        for(Course course : courses) {
+            courseList.add(CourseDto.of(course));
+        }
+        return courseList;
 
     }
 }

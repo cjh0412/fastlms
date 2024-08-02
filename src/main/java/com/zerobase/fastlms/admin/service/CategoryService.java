@@ -9,18 +9,24 @@ public interface CategoryService {
 
     List<CategoryDto> list();
 
-    /**
+    /*
      * 신규추가
      */
     boolean add(String categoryName);
 
-    /**
+    /*
      * 수정
      */
     boolean update(CategoryInput param);
 
-    /**
+    /*
      * 삭제
      */
     boolean del(long id);
+
+    /*
+     * 프론트 카테고리 정보
+     */
+    List<CategoryDto> frontList(CategoryDto parameter);
+
 }
