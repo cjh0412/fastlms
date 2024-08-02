@@ -37,7 +37,6 @@ public class AdminCourseController extends BaseController{
         long totalCount = 0;
         if(!CollectionUtils.isEmpty(courseList) ){
             totalCount = courseList.get(0).getTotalCount();
-            log.info("totalCount : " + totalCount+"");
         }
 
         String QueryString = param.getQueryString(); // 조회 조건
