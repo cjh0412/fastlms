@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor // default 생성자
 @AllArgsConstructor // 모든 파라메터가 존재하는 생성자
-public class Member {
+public class Member implements MemberCode{
     @Id // pk
     private String userId;
 
@@ -37,6 +37,9 @@ public class Member {
     
     private boolean adminYn; // 관리자 여부 체크
 
+
+    //회원의 상태
+    private String userStatus;
     
 
 
