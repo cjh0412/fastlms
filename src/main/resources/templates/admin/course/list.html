@@ -83,7 +83,7 @@
                 });
 
                 console.log(idList);
-                console.log(idList.join(','));
+                console.log(idList.join(',')); // 문자열로 전환
 
                 var $deleteForm = $('form[name=deleteForm]');
                 $deleteForm.find('input[name=idList]').val( idList.join(',') );
@@ -133,6 +133,7 @@
             <td th:text="${x.seq}">1</td>
             <td>
                 <p>
+                        <!--동일경로로 이동할 경우 /admin/course/.. 생략 -->
                     <a th:href="'edit?id=' + ${x.id}" th:text="${x.subject}">강좌명</a>
                 </p>
             </td>

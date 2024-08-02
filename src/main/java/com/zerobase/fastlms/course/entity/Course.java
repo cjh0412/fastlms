@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
@@ -29,7 +30,9 @@ public class Course {
     String contents;
     long price;
     long salePrice;
-    LocalDateTime salEndDt;
+    LocalDate saleEndDt;
+
+    long categoryId;
 
     LocalDateTime regDt; // 등록일
     LocalDateTime udtDt; // 수정일

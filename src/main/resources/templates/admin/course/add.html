@@ -137,8 +137,8 @@
         </table>
 
         <div class="buttons">
-            <button th:if="${editMode}" type="submit"> 강좌 수정 하기 </button>
-            <button th:if="${!editMode}" type="submit"> 강좌 등록 하기 </button>
+            <button th:if="${editMode}" type="submit"> 강좌 수정 하기 </button> <!--edit-->
+            <button th:if="${!editMode}" type="submit"> 강좌 등록 하기 </button>  <!--add-->
             <a href="/admin/course/list"> 목록 이동 </a>
         </div>
 

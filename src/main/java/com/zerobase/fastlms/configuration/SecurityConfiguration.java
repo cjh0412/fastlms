@@ -85,7 +85,7 @@ public class SecurityConfiguration {
                 );
 
         http.csrf((csrf) -> csrf.disable()); // 위조방지 비활성화
-
+        http.headers((head) -> head.disable()); // x-frame 비활성화
         return http.build();
     }
 
