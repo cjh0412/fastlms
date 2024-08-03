@@ -23,6 +23,7 @@ public class Member implements MemberCode{
     private String password ;
     private String phone ;
     private LocalDateTime regDt;
+    private LocalDateTime udtDt;
 
     private boolean emailAuthYN; // 이메일 인증 여부
     private String emailAuthKey; // 이메일 인증 키

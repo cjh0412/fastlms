@@ -4,6 +4,7 @@ import com.zerobase.fastlms.member.entity.Member;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Data
 @Builder
@@ -14,6 +15,7 @@ public class MemberDto {
     String password;
     String phone;
     LocalDateTime regDt;
+    LocalDateTime udtDt;
     String userName;
     String emailAuthKey;
     boolean emailAuthYN;
@@ -43,4 +45,17 @@ public class MemberDto {
                 .build();
 
     }
+
+    public String getRegDtText(){
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm");
+        return regDt!= null ? regDt.format(formatter) : ""; // regDt가 null이 아닌 경우만
+
+    }
+
+    public String getUdtDtText(){
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm");
+        return udtDt!= null ? udtDt.format(formatter) : "";
+
+    }
+
 }

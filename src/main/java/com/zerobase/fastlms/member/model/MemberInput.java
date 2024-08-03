@@ -9,4 +9,7 @@ public class MemberInput {
     private String userName;
     private String password ;
     private String phone ;
+
+    //사용자 비밀번호 변경
+    private String newPassword ;
 }

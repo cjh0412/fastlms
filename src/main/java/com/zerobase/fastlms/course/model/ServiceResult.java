@@ -10,7 +10,7 @@ public class ServiceResult {
     String message; //result 값이 false 일때
 
     public ServiceResult() {
-
+        result = true;
     }
 
     public ServiceResult(boolean result, String message) {

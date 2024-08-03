@@ -4,6 +4,7 @@ import com.zerobase.fastlms.admin.dto.MemberDto;
 import com.zerobase.fastlms.admin.mapper.MemberMapper;
 import com.zerobase.fastlms.admin.model.MemberParam;
 import com.zerobase.fastlms.compoents.MailCompoents;
+import com.zerobase.fastlms.course.model.ServiceResult;
 import com.zerobase.fastlms.member.entity.Member;
 import com.zerobase.fastlms.member.exception.MemberNotEmailAuthException;
 import com.zerobase.fastlms.member.exception.MemberStopUserException;
@@ -285,6 +286,53 @@ public class MemberServiceImpl implements MemberService {
         member.setPassword(encPassword);
         memberRepository.save(member);
         return true;
+    }
+
+    /**
+     * 회원 비밀번호 초기화(사용자)
+     *
+     * @param param
+     */
+    @Override
+    public ServiceResult updateMemberPassword(MemberInput param) {
+        //회원 정보
+        String userId = param.getUserId();
+        Optional<Member> optionalMember = memberRepository.findById(userId); // email
+        if (!optionalMember.isPresent()) {
+            return new ServiceResult(false, "회원정보가 존재하지 않습니다.");
+        }
+
+        Member member = optionalMember.get();
+        //비밀번호 암호화
+
+        if(!BCrypt.checkpw(param.getPassword(), member.getPassword())){
+            return new ServiceResult(false, "비밀번호가 일치하지 않습니다..");
+        }
+
+        String encPassword = BCrypt.hashpw(param.getNewPassword(), BCrypt.gensalt());
+        member.setPassword(encPassword);
+        memberRepository.save(member);
+        return new ServiceResult(true);
+    }
+
+    /**
+     * 회원정보 수정
+     *
+     * @param param
+     */
+    @Override
+    public ServiceResult updateMember(MemberInput param) {
+        String userId = param.getUserId();
+        Optional<Member> optionalMember = memberRepository.findById(userId); // email
+        if (!optionalMember.isPresent()) {
+            return new ServiceResult(false, "회원정보가 존재하지 않습니다.");
+        }
+
+        Member member = optionalMember.get();
+        member.setPhone(param.getPhone());
+        member.setUdtDt(LocalDateTime.now());
+        memberRepository.save(member);
+        return new ServiceResult(true);
     }
 
 
