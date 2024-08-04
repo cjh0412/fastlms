@@ -37,6 +37,9 @@ public class CourseDto {
 
     long categoryId;
 
+    String fileName;
+    String urlFileName;
+
 
 
     public static CourseDto of(Course course) {
@@ -53,6 +56,8 @@ public class CourseDto {
                 .regDt(course.getRegDt())
                 .udtDt(course.getUdtDt())
                 .categoryId(course.getCategoryId())
+                .fileName(course.getFileName())
+                .urlFileName(course.getUrlFileName())
                 .build();
 
     }

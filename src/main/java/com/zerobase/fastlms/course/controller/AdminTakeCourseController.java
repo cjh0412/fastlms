@@ -13,9 +13,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.properties.bind.BindResult;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.CollectionUtils;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
@@ -27,13 +29,15 @@ public class AdminTakeCourseController extends BaseController{
 
     private final TakeCourseService takeCourseService;
     private final CategoryService categoryService;
+    private final CourseService courseService;
 
     @GetMapping("/admin/takecourse/list")
-    public String list(Model model , TakeCourseParam param){
+    public String list(Model model , TakeCourseParam param, BindingResult bindingResult){
 
         param.init();
         List<TakeCourseDto> takCourseList = takeCourseService.list(param);
-
+        //전체 강좌
+        List<CourseDto> courseList= courseService.listAll();
         long totalCount = 0;
         if(!CollectionUtils.isEmpty(takCourseList) ){
             totalCount = takCourseList.get(0).getTotalCount();
@@ -45,6 +49,8 @@ public class AdminTakeCourseController extends BaseController{
         model.addAttribute("pager", pagerHtml);
         model.addAttribute("totalCount", totalCount);
         model.addAttribute("list", takCourseList);
+        model.addAttribute("courseList", courseList);
+
         return "admin/takecourse/list";
     }
 

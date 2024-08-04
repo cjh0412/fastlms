@@ -100,7 +100,7 @@
             <option value="">전체 강좌</option>
             <option th:each="x : ${courseList}"
                     th:selected="${#strings.equals(param.searchCourseId, x.id)}"
-                    th:value="${x.id}" th:text="${x.subject}">자바 프로그래밍</option>
+                    th:value="${x.id}" th:text="${x.subject}"></option>
         </select>
 
         <p class="total-count">전체 <span th:text="${totalCount}"></span>개</p>
@@ -133,10 +133,10 @@
         <tr th:each="x : ${list}">
             <td th:text="${x.seq}">1</td>
             <td>
-                <p th:text="${x.regDtText}">2021.01.01</p>
+                <p th:text="${x.regDtText}"></p>
             </td>
             <td>
-                <p th:text="${x.subject}">강좌명 </p>
+                <p th:text="${x.subject}"></p>
             </td>
             <td>
                 <p th:text="${x.userName}"></p>

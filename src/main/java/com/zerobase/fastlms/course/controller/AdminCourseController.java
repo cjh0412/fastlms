@@ -15,10 +15,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @Controller
@@ -76,8 +82,88 @@ public class AdminCourseController extends BaseController{
         return "admin/course/add";
     }
 
+
+    String[] getNewSaveFile(String baseLocalPath, String baseUrlPath, String originalFilename){
+        LocalDate now = LocalDate.now();
+
+        String[] dirs = {
+        //연 폴더
+        String.format("%s/%d/", baseLocalPath, now.getYear()),
+
+        // 연/월 폴더
+        String.format("%s/%d/%02d/", baseLocalPath, now.getYear(), now.getMonthValue()),
+
+        //연/월/일 폴더
+         String.format("%s/%d/%02d/%02d/", baseLocalPath, now.getYear(), now.getMonthValue(), now.getDayOfMonth())
+        };
+
+        String urlDir = String.format("%s/%d/%02d/%02d/", baseUrlPath, now.getYear(), now.getMonthValue(), now.getDayOfMonth());
+
+        for(String dir : dirs){
+            //파일 생성
+            File file = new File(dir);
+            if(!file.isDirectory()){
+                file.mkdir();
+            }
+        }
+
+        String fileExtension = "";
+        if(originalFilename != null){
+            int dotPos = originalFilename.lastIndexOf("."); // 확장자 추출
+            if(dotPos > -1){
+                fileExtension = originalFilename.substring(dotPos + 1);
+            }
+        }
+
+
+        String uuid = UUID.randomUUID().toString().replace("-",""); // uuid의 -제거
+        String newFileName = String.format("%s%s", dirs[2], uuid); //파일명
+        String newUrlFileName = String.format("%s%s", urlDir, uuid); //webapp에 설정된 파일 url 경로(/files부터 시작)
+        if(fileExtension.length() > 0){
+            newFileName += "." + fileExtension; // new 파일명+확장자
+            newUrlFileName += "." + fileExtension; // new 파일명+확장자
+        }
+
+        return new String[]{newFileName, newUrlFileName};
+
+    }
+
+
     @PostMapping(value={"/admin/course/add", "/admin/course/edit"})
-    public String addSubmit(Model model, CourseInput param, HttpServletRequest request){
+    public String addSubmit(Model model,
+                            CourseInput param,
+                            HttpServletRequest request,
+                            MultipartFile file){
+
+        String saveFileName = "";
+        String urlFileName = "";
+
+        if(file != null){
+
+            //업로드된 파일명+확장자
+            String originalFilename = file.getOriginalFilename();
+
+            //파일 업로드 경로 세팅
+            String baseLocalPath = "C:/dev/zerobase/fastlms/files";
+            String baseUrlPath = "/files";
+            String[] arrFilename = getNewSaveFile(baseLocalPath, baseUrlPath, originalFilename);
+
+            saveFileName = arrFilename[0];
+            urlFileName = arrFilename[1];
+
+
+            try {
+                File newFile = new File(saveFileName);
+                FileCopyUtils.copy(file.getInputStream(), new FileOutputStream(newFile));
+            }catch (Exception e){
+                log.error(e.getMessage());
+            }
+
+        }
+
+        param.setFileName(saveFileName);
+        param.setUrlFileName(urlFileName);
+
         boolean editMode = request.getRequestURI().contains("/edit");
         if(editMode){
             long id = param.getId();

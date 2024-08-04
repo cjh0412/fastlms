@@ -63,6 +63,8 @@ public class CourseServiceImpl implements CourseService {
                 .salePrice(param.getSalePrice())
                 //종료일문자열
                 .saleEndDt(saleEndDt)
+                .fileName(param.getFileName())
+                .urlFileName(param.getUrlFileName())
                 .build();
         courseRepository.save(course);
         return true;
@@ -87,7 +89,9 @@ public class CourseServiceImpl implements CourseService {
         course.setSummary(param.getSummary());
         course.setSalePrice(param.getSalePrice());
         course.setContents(param.getContents());
+        course.setFileName(param.getFileName());
         course.setSaleEndDt(saleEndDt);
+        course.setUrlFileName(param.getUrlFileName());
         //종료문자열
 
         courseRepository.save(course);
@@ -212,6 +216,12 @@ public class CourseServiceImpl implements CourseService {
         result.setMessage("");
 
         return result;
+    }
+
+    @Override
+    public List<CourseDto> listAll() {
+        List<Course> courseList = courseRepository.findAll();
+        return CourseDto.of(courseList);
     }
 
 }

@@ -18,6 +18,11 @@ public class CourseInput {
     long salePrice;
     String saleEndDtText;
 
+
+    //첨부파일 저장
+    String fileName;
+    String urlFileName;
+
     //삭제를 위한
     String idList; // 문자열전달
     //List<String> ids; // 배열로전달
