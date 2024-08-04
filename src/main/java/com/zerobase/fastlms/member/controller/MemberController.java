@@ -2,11 +2,14 @@ package com.zerobase.fastlms.member.controller;
 
 
 import com.zerobase.fastlms.admin.dto.MemberDto;
+import com.zerobase.fastlms.course.dto.TakeCourseDto;
 import com.zerobase.fastlms.course.model.ServiceResult;
+import com.zerobase.fastlms.course.service.TakeCourseService;
 import com.zerobase.fastlms.member.model.MemberInput;
 import com.zerobase.fastlms.member.model.ResetPasswordInput;
 import com.zerobase.fastlms.member.repository.MemberRepository;
 import com.zerobase.fastlms.member.service.MemberService;
+import com.zerobase.fastlms.util.PasswordUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @RequiredArgsConstructor // 생성자 자동 생성
 @Controller
@@ -25,6 +29,7 @@ public class MemberController {
 
     private static final Logger log = LoggerFactory.getLogger(MemberController.class);
     private final MemberService memberService;
+    private final TakeCourseService takeCourseService;
 
     @GetMapping(value = "/member/register" )
     public String register(){
@@ -92,6 +97,7 @@ public class MemberController {
     @PostMapping("/member/password")
     public String memberPasswordSubmit( Model model, MemberInput param, Principal principal){
         String userId = principal.getName();
+        param.setUserId(userId);
         ServiceResult result =  memberService.updateMemberPassword(param);
         if(!result.isResult()){
             model.addAttribute("message", result.getMessage());
@@ -104,10 +110,9 @@ public class MemberController {
     @GetMapping("/member/takecourse")
     public String memberTakeCourse(Principal principal, Model model){
         String userId = principal.getName();
+        List<TakeCourseDto> list = takeCourseService.myCourse(userId);
 
-        MemberDto detail =  memberService.detail(userId);
-        model.addAttribute("detail", detail);
-
+        model.addAttribute("list", list);
         return "member/takecourse";
     }
 
@@ -163,6 +168,25 @@ public class MemberController {
 
         model.addAttribute("result", result);
         return "member/reset_password_result";
+    }
+
+    @GetMapping("/member/withdraw")
+    public String memberWithDraw(Model model){
+
+        return "member/withdraw";
+    }
+
+    @PostMapping("/member/withdraw")
+    public String memberWithDrawSubmit(Model model, Principal principal, MemberInput param){
+        String userId = principal.getName();
+        ServiceResult result = memberService.withdraw(userId, param.getPassword());
+        if(!result.isResult()){
+            model.addAttribute("message", result.getMessage());
+            return "common/error";
+        }
+
+        //회원탈퇴후 로그아웃
+        return "redirect:/member/logout";
     }
 }
 

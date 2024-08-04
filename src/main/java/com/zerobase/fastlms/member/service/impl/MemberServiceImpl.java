@@ -6,12 +6,14 @@ import com.zerobase.fastlms.admin.model.MemberParam;
 import com.zerobase.fastlms.compoents.MailCompoents;
 import com.zerobase.fastlms.course.model.ServiceResult;
 import com.zerobase.fastlms.member.entity.Member;
+import com.zerobase.fastlms.member.entity.MemberCode;
 import com.zerobase.fastlms.member.exception.MemberNotEmailAuthException;
 import com.zerobase.fastlms.member.exception.MemberStopUserException;
 import com.zerobase.fastlms.member.model.MemberInput;
 import com.zerobase.fastlms.member.model.ResetPasswordInput;
 import com.zerobase.fastlms.member.repository.MemberRepository;
 import com.zerobase.fastlms.member.service.MemberService;
+import com.zerobase.fastlms.util.PasswordUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.GrantedAuthority;
@@ -303,13 +305,19 @@ public class MemberServiceImpl implements MemberService {
         }
 
         Member member = optionalMember.get();
-        //비밀번호 암호화
 
-        if(!BCrypt.checkpw(param.getPassword(), member.getPassword())){
-            return new ServiceResult(false, "비밀번호가 일치하지 않습니다..");
+        if(!PasswordUtil.equals(param.getPassword(), member.getPassword())){
+            return new ServiceResult(false, "비밀번호가 일치하지 않습니다.");
         }
 
-        String encPassword = BCrypt.hashpw(param.getNewPassword(), BCrypt.gensalt());
+//        if(!BCrypt.checkpw(param.getPassword(), member.getPassword())){
+//            return new ServiceResult(false, "비밀번호가 일치하지 않습니다.");
+//        }
+
+        //비밀번호 암호화
+        String encPassword = PasswordUtil.encPassword(param.getPassword());
+//        String encPassword = BCrypt.hashpw(param.getNewPassword(), BCrypt.gensalt());
+
         member.setPassword(encPassword);
         memberRepository.save(member);
         return new ServiceResult(true);
@@ -331,7 +339,45 @@ public class MemberServiceImpl implements MemberService {
         Member member = optionalMember.get();
         member.setPhone(param.getPhone());
         member.setUdtDt(LocalDateTime.now());
+        member.setZipcode(param.getZipcode());
+        member.setAddr(param.getAddr());
+        member.setAddrDetail(param.getAddrDetail());
         memberRepository.save(member);
+        return new ServiceResult(true);
+    }
+
+    @Override
+    public ServiceResult withdraw(String userId, String password) {
+        Optional<Member> optionalMember = memberRepository.findById(userId); // email
+
+        if (!optionalMember.isPresent()) {
+            return new ServiceResult(false, "회원정보가 존재하지 않습니다.");
+        }
+
+        Member member = optionalMember.get();
+
+        if(!PasswordUtil.equals(password, member.getPassword())){
+            return new ServiceResult(false, "비밀번호가 일치하지 않습니다.");
+        }
+
+
+        member.setUserName("삭제회원");
+        member.setPhone("");
+        member.setPassword("");
+        member.setRegDt(null);
+        member.setUdtDt(null);
+        member.setEmailAuthDt(null);
+        member.setEmailAuthKey("");
+        member.setEmailAuthYN(false);
+        member.setResetPasswordKey("");
+        member.setResetPasswordLimitDt(null);
+        member.setUserStatus(MemberCode.MEMBER_STATUS_WITHDRAW);
+
+        member.setZipcode("");
+        member.setAddrDetail("");
+        member.setAddr("");
+        memberRepository.save(member);
+
         return new ServiceResult(true);
     }
 
@@ -352,6 +398,10 @@ public class MemberServiceImpl implements MemberService {
 
         if(Member.MEMBER_STATUS_STOP.equals(member.getUserStatus())){
             throw new MemberStopUserException("정지된 회원 입니다.");
+        }
+
+        if(Member.MEMBER_STATUS_WITHDRAW.equals(member.getUserStatus())){
+            throw new MemberStopUserException("탈퇴된 회원 입니다.");
         }
 //        if(!member.isEmailAuthYN()){
 //            throw new MemberNotEmailAuthException("이메일 활성화 이후에 로그인을 해주세요");

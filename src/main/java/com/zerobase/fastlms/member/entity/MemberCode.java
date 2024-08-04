@@ -10,4 +10,7 @@ public interface MemberCode {
 
     //가입 요청 중
     String MEMBER_STATUS_REQ = "REQ";
+
+    //회원 탈퇴
+    String MEMBER_STATUS_WITHDRAW = "WITHDRAW";
 }

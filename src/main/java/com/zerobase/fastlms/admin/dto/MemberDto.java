@@ -30,6 +30,11 @@ public class MemberDto {
     long totalCount;
     long seq; // no
 
+    //주소관련
+    private String zipcode;
+    private String addr;
+    private String addrDetail;
+
     public static MemberDto of (Member member) {
         return MemberDto.builder()
                 .userId(member.getUserId())
@@ -42,6 +47,9 @@ public class MemberDto {
                 .resetPasswordKey(member.getResetPasswordKey())
                 .adminYn(member.isAdminYn())
                 .userStatus(member.getUserStatus())
+                .addr(member.getAddr())
+                .zipcode(member.getZipcode())
+                .addrDetail(member.getAddrDetail())
                 .build();
 
     }

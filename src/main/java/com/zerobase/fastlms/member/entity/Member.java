@@ -41,7 +41,12 @@ public class Member implements MemberCode{
 
     //회원의 상태
     private String userStatus;
-    
+
+
+    //주소관련
+    private String zipcode;
+    private String addr;
+    private String addrDetail;
 
 
 

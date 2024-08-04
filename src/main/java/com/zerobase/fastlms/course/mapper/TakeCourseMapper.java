@@ -13,4 +13,5 @@ import java.util.List;
 public interface TakeCourseMapper {
     long selectListCount(TakeCourseParam Param);
     List<TakeCourseDto> selectList(TakeCourseParam Param);
+    List<TakeCourseDto> selectListMyCourse(TakeCourseParam Param);
 }

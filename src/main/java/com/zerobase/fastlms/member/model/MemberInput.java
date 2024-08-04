@@ -12,4 +12,9 @@ public class MemberInput {
 
     //사용자 비밀번호 변경
     private String newPassword ;
+
+    //주소관련
+    private String zipcode;
+    private String addr;
+    private String addrDetail;
 }
